@@ -93,6 +93,21 @@ defmodule Appsignal.PlugTest do
       assert {:ok, [{%Span{}, "GET /"}]} = Test.Span.get(:set_name)
     end
 
+    test "sets the span's sample data" do
+      {:ok, sample_data} = Test.Span.get(:set_sample_data)
+
+      assert Enum.any?(sample_data, fn {%Span{}, key, data} ->
+               key == "environment" and
+                 data ==
+                   %{
+                     "host" => "www.example.com",
+                     "method" => "GET",
+                     "port" => 80,
+                     "request_path" => "/"
+                   }
+             end)
+    end
+
     test "closes the span" do
       assert {:ok, [{%Span{}}]} = Test.Tracer.get(:close_span)
     end
@@ -106,7 +121,11 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's parameters" do
-      assert {:ok, [{%Span{}, "params", %{"id" => "4"}}]} = Test.Span.get(:set_sample_data)
+      {:ok, sample_data} = Test.Span.get(:set_sample_data)
+
+      assert Enum.any?(sample_data, fn {%Span{}, key, data} ->
+               key == "params" and data == %{"id" => "4"}
+             end)
     end
   end
 
@@ -118,7 +137,11 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's parameters" do
-      assert {:ok, [{%Span{}, "params", %{"id" => "4"}}]} = Test.Span.get(:set_sample_data)
+      {:ok, sample_data} = Test.Span.get(:set_sample_data)
+
+      assert Enum.any?(sample_data, fn {%Span{}, key, data} ->
+               key == "params" and data == %{"id" => "4"}
+             end)
     end
   end
 
@@ -136,7 +159,26 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's parameters" do
-      assert {:ok, [{%Span{}, "params", %{"id" => "4"}}]} = Test.Span.get(:set_sample_data)
+      {:ok, sample_data} = Test.Span.get(:set_sample_data)
+
+      assert Enum.any?(sample_data, fn {%Span{}, key, data} ->
+               key == "params" and data == %{"id" => "4"}
+             end)
+    end
+
+    test "sets the span's sample data" do
+      {:ok, sample_data} = Test.Span.get(:set_sample_data)
+
+      assert Enum.any?(sample_data, fn {%Span{}, key, data} ->
+               key == "environment" and
+                 data ==
+                   %{
+                     "host" => "www.example.com",
+                     "method" => "GET",
+                     "port" => 80,
+                     "request_path" => "/exception"
+                   }
+             end)
     end
 
     test "reraises the error", %{kind: kind, reason: reason} do
@@ -165,7 +207,11 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's parameters" do
-      assert {:ok, [{%Span{}, "params", %{"id" => "4"}}]} = Test.Span.get(:set_sample_data)
+      {:ok, sample_data} = Test.Span.get(:set_sample_data)
+
+      assert Enum.any?(sample_data, fn {%Span{}, key, data} ->
+               key == "params" and data == %{"id" => "4"}
+             end)
     end
   end
 

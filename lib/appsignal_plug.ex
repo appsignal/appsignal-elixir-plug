@@ -57,6 +57,7 @@ defmodule Appsignal.Plug do
             span
             |> Appsignal.Plug.set_name(conn)
             |> Appsignal.Plug.set_params(conn)
+            |> Appsignal.Plug.set_sample_data(conn)
             |> @tracer.close_span()
 
             Logger.debug("Appsignal.Plug: Closed span (#{inspect(span)})")
@@ -96,6 +97,20 @@ defmodule Appsignal.Plug do
     @span.set_sample_data(span, "params", params)
   end
 
+  def set_sample_data(span, %Plug.Conn{
+        host: host,
+        method: method,
+        request_path: request_path,
+        port: port
+      }) do
+    @span.set_sample_data(span, "environment", %{
+      "host" => host,
+      "method" => method,
+      "request_path" => request_path,
+      "port" => port
+    })
+  end
+
   def handle_error(
         span,
         :error,
@@ -127,5 +142,6 @@ defmodule Appsignal.Plug do
     |> @span.add_error(kind, reason, stack)
     |> Appsignal.Plug.set_name(conn)
     |> Appsignal.Plug.set_params(conn)
+    |> Appsignal.Plug.set_sample_data(conn)
   end
 end
