@@ -1,4 +1,6 @@
 defmodule Appsignal.Plug do
+  require Logger
+
   @span Application.get_env(:appsignal, :appsignal_span, Appsignal.Span)
 
   @moduledoc """
@@ -25,6 +27,7 @@ defmodule Appsignal.Plug do
 
   defmacro __using__(_) do
     quote do
+      require Logger
       @tracer Application.get_env(:appsignal, :appsignal_tracer, Appsignal.Tracer)
       @span Application.get_env(:appsignal, :appsignal_span, Appsignal.Span)
 
@@ -32,6 +35,7 @@ defmodule Appsignal.Plug do
 
       def call(conn, opts) do
         span = @tracer.create_span("web")
+        Logger.debug("Appsignal.Plug: Created span (#{inspect(span)})")
 
         try do
           super(conn, opts)
@@ -43,6 +47,8 @@ defmodule Appsignal.Plug do
             |> Appsignal.Plug.handle_error(kind, reason, stack, conn)
             |> @tracer.close_span()
 
+            Logger.debug("Appsignal.Plug: Closed span (#{inspect(span)})")
+
             @tracer.ignore()
 
             :erlang.raise(kind, reason, stack)
@@ -52,6 +58,8 @@ defmodule Appsignal.Plug do
             |> Appsignal.Plug.set_name(conn)
             |> Appsignal.Plug.set_params(conn)
             |> @tracer.close_span()
+
+            Logger.debug("Appsignal.Plug: Closed span (#{inspect(span)})")
 
             conn
         end
@@ -78,11 +86,13 @@ defmodule Appsignal.Plug do
   end
 
   defp do_set_name(span, name) do
+    Logger.debug("Appsignal.Plug: Set name from conn (#{inspect(span)}, {#{inspect(name)})")
     @span.set_name(span, name)
   end
 
   def set_params(span, conn) do
     %Plug.Conn{params: params} = Plug.Conn.fetch_query_params(conn)
+    Logger.debug("Appsignal.Plug: Set params from conn (#{inspect(span)}, #{inspect(params)})")
     @span.set_sample_data(span, "params", params)
   end
 
@@ -108,6 +118,11 @@ defmodule Appsignal.Plug do
   end
 
   def handle_error(span, kind, reason, stack, conn) do
+    Logger.debug(
+      "Appsignal.Plug: Add error from catch" <>
+        " (#{inspect(span)}, #{inspect(reason)}, #{inspect(reason)})"
+    )
+
     span
     |> @span.add_error(kind, reason, stack)
     |> Appsignal.Plug.set_name(conn)
