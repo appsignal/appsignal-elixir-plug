@@ -7,8 +7,8 @@ defmodule Appsignal.Plug do
 
   ## Installation
 
-  To install Appsignal.Plug into your Plug application, `use Appsignal.Plug` in
-  your application's router module:
+  To install `Appsignal.Plug` into your Plug application, `use Appsignal.Plug`
+  in your application's router module:
 
       defmodule AppsignalPlugExample do
         use Plug.Router
