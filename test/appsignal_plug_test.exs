@@ -103,6 +103,10 @@ defmodule Appsignal.PlugTest do
       assert {:ok, [{%Span{}, "GET /"}]} = Test.Span.get(:set_name)
     end
 
+    test "sets the span's category" do
+      assert {:ok, [{%Span{}, "appsignal:category", "call.plug"}]} = Test.Span.get(:set_attribute)
+    end
+
     test "sets the span's sample data" do
       assert sample_data("environment", %{
                "host" => "www.example.com",

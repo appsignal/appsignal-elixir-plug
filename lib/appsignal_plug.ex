@@ -65,6 +65,7 @@ defmodule Appsignal.Plug do
   @doc false
   def set_conn_data(span, conn) do
     span
+    |> @span.set_attribute("appsignal:category", "call.plug")
     |> set_name(conn)
     |> set_params(conn)
     |> set_sample_data(conn)
