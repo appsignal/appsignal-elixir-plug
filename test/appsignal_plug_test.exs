@@ -364,6 +364,21 @@ defmodule Appsignal.PlugTest do
       assert {:ok, [{^span, "GET /"}]} = Test.Span.get(:set_name)
     end
 
+    test "sets the span's category", %{span: span} do
+      assert Appsignal.Plug.set_conn_data(span, %Plug.Conn{}) == span
+
+      assert {:ok, [{^span, "appsignal:category", "call.plug"}]} = Test.Span.get(:set_attribute)
+    end
+
+    test "sets the span's category, with a Phoenix conn", %{span: span} do
+      assert Appsignal.Plug.set_conn_data(span, %Plug.Conn{
+               private: %{phoenix_endpoint: Appsignal.Endpoint}
+             }) == span
+
+      assert {:ok, [{^span, "appsignal:category", "call.phoenix"}]} =
+               Test.Span.get(:set_attribute)
+    end
+
     test "ignores Phoenix conns", %{span: span} do
       assert Appsignal.Plug.set_conn_data(span, %Plug.Conn{
                method: "GET",
