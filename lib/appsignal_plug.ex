@@ -54,7 +54,7 @@ defmodule Appsignal.Plug do
           else
             conn ->
               Appsignal.Plug.set_conn_data(span, conn)
-              conn
+              Plug.Conn.put_private(conn, :appsignal_plug_instrumented, true)
           end
         end)
       end

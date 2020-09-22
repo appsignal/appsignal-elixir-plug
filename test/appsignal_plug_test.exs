@@ -129,6 +129,10 @@ defmodule Appsignal.PlugTest do
     test "closes the span" do
       assert {:ok, [{%Span{}}]} = Test.Tracer.get(:close_span)
     end
+
+    test "sets the :appsignal_plug_instrumented flag", %{conn: conn} do
+      assert %Plug.Conn{private: %{appsignal_plug_instrumented: true}} = conn
+    end
   end
 
   describe "GET /users/:id" do
