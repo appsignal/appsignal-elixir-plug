@@ -373,6 +373,29 @@ defmodule Appsignal.PlugTest do
     end
   end
 
+  describe "GET /, when plugging Appsignal.Plug twice" do
+    setup do
+      conn =
+        :get
+        |> conn("/", nil)
+        |> Plug.Conn.put_private(:appsignal_plug_instrumented, true)
+
+      [conn: conn]
+    end
+
+    test "prints a double-plugging error", %{conn: conn} do
+      assert ExUnit.CaptureLog.capture_log(fn ->
+               PlugWithAppsignal.call(conn, [])
+             end) =~
+               "Appsignal.Plug was included twice, disabling Appsignal.Plug. Please only `use Appsignal.Plug` once."
+    end
+
+    test "returns the conn", %{conn: conn} do
+      conn = PlugWithAppsignal.call(conn, [])
+      assert %Plug.Conn{state: :sent} = conn
+    end
+  end
+
   describe ".set_conn_data/2" do
     setup do
       [span: Span.create_root("set_conn_data", self())]
