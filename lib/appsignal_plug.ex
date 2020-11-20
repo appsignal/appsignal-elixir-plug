@@ -45,13 +45,15 @@ defmodule Appsignal.Plug do
 
       def call(conn, opts) do
         Appsignal.instrument(fn span ->
-          @span.set_namespace(span, "http_request")
+          _ = @span.set_namespace(span, "http_request")
 
           try do
             super(conn, opts)
           catch
             kind, reason ->
               stack = __STACKTRACE__
+
+              _ = span
 
               span
               |> Appsignal.Plug.handle_error(kind, reason, stack, conn)
@@ -61,7 +63,7 @@ defmodule Appsignal.Plug do
               :erlang.raise(kind, reason, stack)
           else
             conn ->
-              Appsignal.Plug.set_conn_data(span, conn)
+              _ = Appsignal.Plug.set_conn_data(span, conn)
               Plug.Conn.put_private(conn, :appsignal_plug_instrumented, true)
           end
         end)
