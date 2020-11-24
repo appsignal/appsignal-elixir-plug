@@ -53,11 +53,10 @@ defmodule Appsignal.Plug do
             kind, reason ->
               stack = __STACKTRACE__
 
-              _ = span
-
-              span
-              |> Appsignal.Plug.handle_error(kind, reason, stack, conn)
-              |> @tracer.close_span()
+              _ =
+                span
+                |> Appsignal.Plug.handle_error(kind, reason, stack, conn)
+                |> @tracer.close_span()
 
               @tracer.ignore()
               :erlang.raise(kind, reason, stack)
