@@ -1,8 +1,19 @@
+defmodule RequestId do
+  def init(_opts) do
+    :ok
+  end
+
+  def call(conn, _opts) do
+    Plug.Conn.put_resp_header(conn, "x-request-id", "request_id")
+  end
+end
+
 defmodule PlugWithAppsignal do
   use Plug.Router
   use Appsignal.Plug
   use Plug.ErrorHandler
 
+  plug(RequestId)
   plug(:match)
   plug(:dispatch)
 
@@ -123,7 +134,9 @@ defmodule Appsignal.PlugTest do
                "host" => "www.example.com",
                "method" => "GET",
                "port" => 80,
-               "request_path" => "/"
+               "request_path" => "/",
+               "status" => 200,
+               "request_id" => "request_id"
              })
     end
 
@@ -196,7 +209,9 @@ defmodule Appsignal.PlugTest do
                "host" => "www.example.com",
                "method" => "GET",
                "port" => 80,
-               "request_path" => "/instrumentation"
+               "request_path" => "/instrumentation",
+               "status" => 200,
+               "request_id" => "request_id"
              })
     end
 
@@ -227,7 +242,9 @@ defmodule Appsignal.PlugTest do
                "host" => "www.example.com",
                "method" => "GET",
                "port" => 80,
-               "request_path" => "/exception"
+               "request_path" => "/exception",
+               "status" => nil,
+               "request_id" => "request_id"
              })
     end
 
