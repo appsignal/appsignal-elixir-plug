@@ -243,7 +243,7 @@ defmodule Appsignal.PlugTest do
                "method" => "GET",
                "port" => 80,
                "request_path" => "/exception",
-               "status" => nil,
+               "status" => 500,
                "request_id" => "request_id"
              })
     end
