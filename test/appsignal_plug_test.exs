@@ -136,7 +136,8 @@ defmodule Appsignal.PlugTest do
                "port" => 80,
                "request_path" => "/",
                "status" => 200,
-               "request_id" => "request_id"
+               "request_id" => "request_id",
+               "req_headers.accept" => "text/html"
              })
     end
 
@@ -211,7 +212,8 @@ defmodule Appsignal.PlugTest do
                "port" => 80,
                "request_path" => "/instrumentation",
                "status" => 200,
-               "request_id" => "request_id"
+               "request_id" => "request_id",
+               "req_headers.accept" => "text/html"
              })
     end
 
@@ -244,7 +246,8 @@ defmodule Appsignal.PlugTest do
                "port" => 80,
                "request_path" => "/exception",
                "status" => 500,
-               "request_id" => "request_id"
+               "request_id" => "request_id",
+               "req_headers.accept" => "text/html"
              })
     end
 
@@ -487,7 +490,10 @@ defmodule Appsignal.PlugTest do
   end
 
   defp get(path, params_or_body \\ nil) do
-    conn = conn(:get, path, params_or_body)
+    conn =
+      :get
+      |> conn(path, params_or_body)
+      |> put_req_header("accept", "text/html")
 
     try do
       [conn: PlugWithAppsignal.call(conn, [])]
