@@ -88,4 +88,14 @@ defmodule Appsignal.Plug.MetadataTest do
              |> Map.get("req_headers.foo")
     end
   end
+
+  describe "when the conn's request_headers are nil" do
+    setup %{conn: conn} do
+      %{conn: %{conn | req_headers: nil}}
+    end
+
+    test "does not crash", %{conn: conn} do
+      assert Appsignal.Metadata.metadata(conn)
+    end
+  end
 end
