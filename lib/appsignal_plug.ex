@@ -32,6 +32,7 @@ defmodule Appsignal.Plug do
 
       @tracer Application.get_env(:appsignal, :appsignal_tracer, Appsignal.Tracer)
       @span Application.get_env(:appsignal, :appsignal_span, Appsignal.Span)
+      @sample_rate Application.get_env(:appsignal, :sample_rate, 1)
 
       use Plug.ErrorHandler
 
@@ -44,6 +45,14 @@ defmodule Appsignal.Plug do
       end
 
       def call(conn, opts) do
+        if :random.uniform() <= @sample_rate do
+          call_instrumented(conn, opts)
+        else
+          super(conn, opts)
+        end
+      end
+
+      defp call_instrumented(conn, opts) do
         Appsignal.instrument(fn span ->
           _ = @span.set_namespace(span, "http_request")
 
