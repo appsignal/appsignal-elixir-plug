@@ -130,15 +130,15 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's sample data" do
-      assert sample_data("environment", %{
-               "host" => "www.example.com",
-               "method" => "GET",
-               "port" => 80,
-               "request_path" => "/",
-               "status" => 200,
-               "request_id" => "request_id",
-               "req_headers.accept" => "text/html"
-             })
+      assert_environment(%{
+        "host" => "www.example.com",
+        "method" => "GET",
+        "port" => 80,
+        "request_path" => "/",
+        "status" => 200,
+        "request_id" => "request_id",
+        "req_headers.accept" => "text/html"
+      })
     end
 
     test "closes the span" do
@@ -168,7 +168,7 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's parameters" do
-      assert sample_data("params", %{"id" => "4"})
+      assert_params(%{"id" => "4"})
     end
   end
 
@@ -180,7 +180,7 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's parameters" do
-      assert sample_data("params", %{"id" => "4"})
+      assert_params(%{"id" => "4"})
     end
   end
 
@@ -206,15 +206,15 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's sample data" do
-      assert sample_data("environment", %{
-               "host" => "www.example.com",
-               "method" => "GET",
-               "port" => 80,
-               "request_path" => "/instrumentation",
-               "status" => 200,
-               "request_id" => "request_id",
-               "req_headers.accept" => "text/html"
-             })
+      assert_environment(%{
+        "host" => "www.example.com",
+        "method" => "GET",
+        "port" => 80,
+        "request_path" => "/instrumentation",
+        "status" => 200,
+        "request_id" => "request_id",
+        "req_headers.accept" => "text/html"
+      })
     end
 
     test "closes both spans" do
@@ -236,19 +236,19 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's parameters" do
-      assert sample_data("params", %{"id" => "4"})
+      assert_params(%{"id" => "4"})
     end
 
     test "sets the span's sample data" do
-      assert sample_data("environment", %{
-               "host" => "www.example.com",
-               "method" => "GET",
-               "port" => 80,
-               "request_path" => "/exception",
-               "status" => 500,
-               "request_id" => "request_id",
-               "req_headers.accept" => "text/html"
-             })
+      assert_environment(%{
+        "host" => "www.example.com",
+        "method" => "GET",
+        "port" => 80,
+        "request_path" => "/exception",
+        "status" => 500,
+        "request_id" => "request_id",
+        "req_headers.accept" => "text/html"
+      })
     end
 
     test "reraises the error", %{kind: kind, reason: reason} do
@@ -277,7 +277,7 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's parameters" do
-      assert sample_data("params", %{"id" => "4"})
+      assert_params(%{"id" => "4"})
     end
   end
 
@@ -459,7 +459,21 @@ defmodule Appsignal.PlugTest do
       assert Appsignal.Plug.set_conn_data(span, %Plug.Conn{method: "GET", params: %{"id" => "4"}}) ==
                span
 
-      assert sample_data("params", %{"id" => "4"})
+      assert_params(%{"id" => "4"})
+    end
+
+    test "filters the span's parameters when Phoenix's filter_parameters is set", %{span: span} do
+      Application.put_env(:phoenix, :filter_parameters, {:keep, ["id"]})
+
+      assert Appsignal.Plug.set_conn_data(span, %Plug.Conn{
+               method: "GET",
+               params: %{"id" => "4", "secret" => "hunter2"}
+             }) ==
+               span
+
+      Application.delete_env(:phoenix, :filter_parameters)
+
+      assert_params(%{"id" => "4", "secret" => "[FILTERED]"})
     end
 
     test "does not set params when send_params is set to false", %{span: span} do
@@ -472,7 +486,7 @@ defmodule Appsignal.PlugTest do
         Application.put_env(:appsignal, :config, config)
       end
 
-      refute sample_data("params", %{"id" => "4"})
+      assert Test.Span.get(:set_params) == :error
     end
 
     test "sets the span's session data", %{span: span} do
@@ -485,12 +499,12 @@ defmodule Appsignal.PlugTest do
                }
              }) == span
 
-      assert sample_data("session_data", %{key: "value"})
+      assert_session_data(%{key: "value"})
     end
 
     test "does not set unfetched session data", %{span: span} do
       assert Appsignal.Plug.set_conn_data(span, %Plug.Conn{}) == span
-      refute sample_data("session_data", %{key: "value"})
+      assert Test.Span.get(:set_session_data) == :error
     end
 
     test "does not set session data when skip_session_data is set to true", %{span: span} do
@@ -510,7 +524,7 @@ defmodule Appsignal.PlugTest do
         Application.put_env(:appsignal, :config, config)
       end
 
-      refute sample_data("session_data", %{key: "value"})
+      assert Test.Span.get(:set_session_data) == :error
     end
   end
 
@@ -549,11 +563,27 @@ defmodule Appsignal.PlugTest do
     end)
   end
 
-  defp sample_data(asserted_key, asserted_data) do
-    {:ok, sample_data} = Test.Span.get(:set_sample_data)
+  defp assert_environment(asserted_data) do
+    {:ok, environment} = Test.Tracer.get(:set_environment)
 
-    Enum.any?(sample_data, fn {%Span{}, key, data} ->
-      key == asserted_key and data == asserted_data
-    end)
+    assert Enum.any?(environment, fn {data} ->
+             data == asserted_data
+           end)
+  end
+
+  defp assert_params(asserted_data) do
+    {:ok, params} = Test.Tracer.get(:set_params)
+
+    assert Enum.any?(params, fn {data} ->
+             data == asserted_data
+           end)
+  end
+
+  defp assert_session_data(asserted_data) do
+    {:ok, session_data} = Test.Tracer.get(:set_session_data)
+
+    assert Enum.any?(session_data, fn {data} ->
+             data == asserted_data
+           end)
   end
 end

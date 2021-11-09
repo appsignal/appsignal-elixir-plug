@@ -1,6 +1,8 @@
 defmodule Appsignal.Plug do
   @span Application.get_env(:appsignal, :appsignal_span, Appsignal.Span)
+  @tracer Application.get_env(:appsignal, :appsignal_tracer, Appsignal.Tracer)
   import Appsignal.Utils, only: [module_name: 1]
+  alias Appsignal.Utils.MapFilter
 
   @moduledoc """
   AppSignal's Plug instrumentation instruments calls to Plug applications to
@@ -104,12 +106,14 @@ defmodule Appsignal.Plug do
 
   @doc false
   def set_conn_data(span, conn) do
+    conn
+    |> set_params()
+    |> set_environment()
+    |> set_session_data()
+
     span
     |> set_name(conn)
     |> set_category(conn)
-    |> set_params(conn)
-    |> set_sample_data(conn)
-    |> set_session_data(conn)
   end
 
   @doc false
@@ -163,34 +167,36 @@ defmodule Appsignal.Plug do
     @span.set_attribute(span, "appsignal:category", "call.plug")
   end
 
-  defp set_params(span, conn) do
-    set_params(span, Application.get_env(:appsignal, :config), conn)
+  defp set_params(conn) do
+    set_params(Application.get_env(:appsignal, :config), conn)
   end
 
-  defp set_params(span, %{send_params: true}, conn) do
+  defp set_params(%{send_params: true}, conn) do
     %Plug.Conn{params: params} = Plug.Conn.fetch_query_params(conn)
-    @span.set_sample_data(span, "params", params)
+    @tracer.set_params(MapFilter.filter(params))
+    conn
   end
 
-  defp set_params(span, _config, _conn) do
-    span
+  defp set_params(_config, conn), do: conn
+
+  defp set_environment(conn) do
+    @tracer.set_environment(Appsignal.Metadata.metadata(conn))
+    conn
   end
 
-  defp set_sample_data(span, conn) do
-    @span.set_sample_data(span, "environment", Appsignal.Metadata.metadata(conn))
+  defp set_session_data(conn) do
+    set_session_data(Application.get_env(:appsignal, :config), conn)
   end
 
-  defp set_session_data(span, conn) do
-    set_session_data(span, Application.get_env(:appsignal, :config), conn)
+  defp set_session_data(
+         %{skip_session_data: false},
+         %Plug.Conn{
+           private: %{plug_session: session, plug_session_fetch: :done}
+         } = conn
+       ) do
+    @tracer.set_session_data(session)
+    conn
   end
 
-  defp set_session_data(span, %{skip_session_data: false}, %Plug.Conn{
-         private: %{plug_session: session, plug_session_fetch: :done}
-       }) do
-    @span.set_sample_data(span, "session_data", session)
-  end
-
-  defp set_session_data(span, _config, _conn) do
-    span
-  end
+  defp set_session_data(_config, conn), do: conn
 end
