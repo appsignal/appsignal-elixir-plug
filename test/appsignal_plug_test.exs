@@ -61,6 +61,11 @@ defmodule PlugWithAppsignal do
     send_resp(conn, 200, "Exit!")
   end
 
+  get "/already-sent" do
+    send_resp(conn, 200, "Exception!")
+    raise "Exception!"
+  end
+
   get "/custom_name" do
     conn
     |> Appsignal.Plug.put_name("PlugWithAppsignal#custom_name")
@@ -371,6 +376,33 @@ defmodule Appsignal.PlugTest do
 
     test "ignores the process in the registry" do
       assert :ets.lookup(:"$appsignal_registry", self()) == [{self(), :ignore}]
+    end
+  end
+
+  describe "GET /already-sent" do
+    setup do
+      get("/already-sent")
+    end
+
+    test "reraises the error", %{kind: kind, reason: reason} do
+      assert kind == :error
+      assert %RuntimeError{} = reason
+    end
+
+    test "adds the error to the span", %{reason: reason, stack: stack} do
+      assert {:ok, [{%Span{}, :error, ^reason, ^stack}]} = Test.Span.get(:add_error)
+    end
+
+    test "sets the span's sample data" do
+      assert sample_data("environment", %{
+        "host" => "www.example.com",
+        "method" => "GET",
+        "port" => 80,
+        "request_path" => "/already-sent",
+        "status" => 500,
+        "request_id" => "request_id",
+        "req_headers.accept" => "text/html"
+      })
     end
   end
 
