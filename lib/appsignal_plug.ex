@@ -46,7 +46,7 @@ defmodule Appsignal.Plug do
       end
 
       def call(conn, opts) do
-        Appsignal.instrument(fn span ->
+        Appsignal.instrument("[unknown request]", fn span ->
           _ = @span.set_namespace(span, "http_request")
 
           try do

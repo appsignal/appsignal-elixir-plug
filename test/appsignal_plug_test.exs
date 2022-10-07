@@ -122,11 +122,12 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's name" do
-      assert {:ok, [{%Span{}, "GET /"}]} = Test.Span.get(:set_name)
+      assert {:ok, [{%Span{}, "GET /"} | _]} = Test.Span.get(:set_name)
     end
 
     test "sets the span's category" do
-      assert {:ok, [{%Span{}, "appsignal:category", "call.plug"}]} = Test.Span.get(:set_attribute)
+      assert {:ok, [{%Span{}, "appsignal:category", "call.plug"} | _]} =
+               Test.Span.get(:set_attribute)
     end
 
     test "sets the span's sample data" do
@@ -156,7 +157,7 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's name" do
-      assert {:ok, [{%Span{}, "GET /users/:id"}]} = Test.Span.get(:set_name)
+      assert {:ok, [{%Span{}, "GET /users/:id"} | _]} = Test.Span.get(:set_name)
     end
   end
 
@@ -232,7 +233,7 @@ defmodule Appsignal.PlugTest do
     end
 
     test "sets the span's name" do
-      assert {:ok, [{%Span{}, "GET /exception"}]} = Test.Span.get(:set_name)
+      assert {:ok, [{%Span{}, "GET /exception"} | _]} = Test.Span.get(:set_name)
     end
 
     test "sets the span's parameters" do
@@ -338,7 +339,7 @@ defmodule Appsignal.PlugTest do
     end
 
     test "adds the name to a nil-span" do
-      assert {:ok, [{nil, "GET /exception"}]} = Test.Span.get(:set_name)
+      assert {:ok, [{nil, "GET /exception"} | _]} = Test.Span.get(:set_name)
     end
 
     test "reraises the error", %{kind: kind, reason: reason} do
@@ -380,7 +381,7 @@ defmodule Appsignal.PlugTest do
     end
 
     test "does not overwrite the custom name" do
-      assert {:ok, [{%Span{}, "PlugWithAppsignal#custom_name"}]} = Test.Span.get(:set_name)
+      assert {:ok, [{%Span{}, "PlugWithAppsignal#custom_name"} | _]} = Test.Span.get(:set_name)
     end
   end
 
@@ -390,7 +391,7 @@ defmodule Appsignal.PlugTest do
     end
 
     test "extracts the controller and action name" do
-      assert {:ok, [{%Span{}, "PlugWithAppsignal#phoenix_action"}]} = Test.Span.get(:set_name)
+      assert {:ok, [{%Span{}, "PlugWithAppsignal#phoenix_action"} | _]} = Test.Span.get(:set_name)
     end
   end
 
@@ -428,7 +429,7 @@ defmodule Appsignal.PlugTest do
                private: %{plug_route: {"/", fn -> :ok end}}
              }) == span
 
-      assert {:ok, [{^span, "GET /"}]} = Test.Span.get(:set_name)
+      assert {:ok, [{^span, "GET /"} | _]} = Test.Span.get(:set_name)
     end
 
     test "sets the span's category", %{span: span} do
