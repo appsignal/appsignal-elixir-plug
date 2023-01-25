@@ -142,4 +142,18 @@ defmodule Appsignal.Plug.MetadataTest do
       assert Appsignal.Metadata.name(conn) == "GET /"
     end
   end
+
+  test "extracts the conn's category", %{conn: conn} do
+    assert Appsignal.Metadata.category(conn) == "call.plug"
+  end
+
+  describe "with a phoenix_endpoint" do
+    setup %{conn: conn} do
+      %{conn: Plug.Conn.put_private(conn, :phoenix_endpoint, Endpoint)}
+    end
+
+    test "extracts the conn's category", %{conn: conn} do
+      assert Appsignal.Metadata.category(conn) == "call.phoenix"
+    end
+  end
 end

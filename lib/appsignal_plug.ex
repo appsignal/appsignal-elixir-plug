@@ -143,12 +143,8 @@ defmodule Appsignal.Plug do
     @span.set_name(span, Appsignal.Metadata.name(conn))
   end
 
-  defp set_category(span, %Plug.Conn{private: %{phoenix_endpoint: _endpoint}}) do
-    @span.set_attribute(span, "appsignal:category", "call.phoenix")
-  end
-
-  defp set_category(span, _conn) do
-    @span.set_attribute(span, "appsignal:category", "call.plug")
+  defp set_category(span, conn) do
+    @span.set_attribute(span, "appsignal:category", Appsignal.Metadata.category(conn))
   end
 
   defp set_params(span, conn) do

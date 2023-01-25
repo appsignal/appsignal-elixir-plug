@@ -43,6 +43,14 @@ defimpl Appsignal.Metadata, for: Plug.Conn do
     nil
   end
 
+  def category(%Plug.Conn{private: %{phoenix_endpoint: _}}) do
+    "call.phoenix"
+  end
+
+  def category(_conn) do
+    "call.plug"
+  end
+
   defp headers(req_headers) do
     headers(req_headers, %{})
   end
