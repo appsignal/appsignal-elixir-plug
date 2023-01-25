@@ -58,7 +58,8 @@ defmodule Appsignal.Plug.MixProject do
 
     [
       {:plug, plug_version},
-      {:appsignal, ">= 2.4.0 and < 3.0.0"},
+      {:appsignal, ">= 2.4.0 and < 3.0.0",
+       github: "appsignal/appsignal-elixir", branch: "metadata"},
       {:credo, "~> 1.2", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
