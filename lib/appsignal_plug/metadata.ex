@@ -56,6 +56,14 @@ defimpl Appsignal.Metadata, for: Plug.Conn do
     params
   end
 
+  def session(%Plug.Conn{private: %{plug_session: session}}) do
+    session
+  end
+
+  def session(_conn) do
+    %{}
+  end
+
   defp headers(req_headers) do
     headers(req_headers, %{})
   end

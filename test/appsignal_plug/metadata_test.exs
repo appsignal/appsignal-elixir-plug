@@ -160,4 +160,8 @@ defmodule Appsignal.Plug.MetadataTest do
   test "extracts the conn's params", %{conn: conn} do
     assert Appsignal.Metadata.params(conn) == %{}
   end
+
+  test "extracts the conn's session data", %{conn: conn} do
+    assert Appsignal.Metadata.session(conn) == %{}
+  end
 end

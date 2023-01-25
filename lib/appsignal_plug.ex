@@ -155,13 +155,7 @@ defmodule Appsignal.Plug do
     @span.set_sample_data(span, "environment", Appsignal.Metadata.metadata(conn))
   end
 
-  defp set_session_data(span, %Plug.Conn{
-         private: %{plug_session: session, plug_session_fetch: :done}
-       }) do
-    @span.set_sample_data(span, "session_data", session)
-  end
-
-  defp set_session_data(span, _conn) do
-    span
+  defp set_session_data(span, conn) do
+    @span.set_sample_data(span, "session_data", Appsignal.Metadata.session(conn))
   end
 end
