@@ -51,6 +51,11 @@ defimpl Appsignal.Metadata, for: Plug.Conn do
     "call.plug"
   end
 
+  def params(conn) do
+    %Plug.Conn{params: params} = Plug.Conn.fetch_query_params(conn)
+    params
+  end
+
   defp headers(req_headers) do
     headers(req_headers, %{})
   end

@@ -148,8 +148,7 @@ defmodule Appsignal.Plug do
   end
 
   defp set_params(span, conn) do
-    %Plug.Conn{params: params} = Plug.Conn.fetch_query_params(conn)
-    @span.set_sample_data(span, "params", params)
+    @span.set_sample_data(span, "params", Appsignal.Metadata.params(conn))
   end
 
   defp set_sample_data(span, conn) do

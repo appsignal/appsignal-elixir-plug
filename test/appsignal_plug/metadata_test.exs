@@ -156,4 +156,8 @@ defmodule Appsignal.Plug.MetadataTest do
       assert Appsignal.Metadata.category(conn) == "call.phoenix"
     end
   end
+
+  test "extracts the conn's params", %{conn: conn} do
+    assert Appsignal.Metadata.params(conn) == %{}
+  end
 end
