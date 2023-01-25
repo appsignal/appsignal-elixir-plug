@@ -446,15 +446,6 @@ defmodule Appsignal.PlugTest do
                Test.Span.get(:set_attribute)
     end
 
-    test "ignores Phoenix conns", %{span: span} do
-      assert Appsignal.Plug.set_conn_data(span, %Plug.Conn{
-               method: "GET",
-               private: %{phoenix_endpoint: AppsignalPhoenixExampleWeb.Endpoint}
-             }) == span
-
-      assert Test.Span.get(:set_name) == :error
-    end
-
     test "sets the span's parameters", %{span: span} do
       assert Appsignal.Plug.set_conn_data(span, %Plug.Conn{method: "GET", params: %{"id" => "4"}}) ==
                span

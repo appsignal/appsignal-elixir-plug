@@ -27,6 +27,22 @@ defimpl Appsignal.Metadata, for: Plug.Conn do
     )
   end
 
+  def name(%Plug.Conn{private: %{appsignal_name: appsignal_name}}) do
+    appsignal_name
+  end
+
+  def name(%Plug.Conn{private: %{phoenix_action: action, phoenix_controller: controller}}) do
+    "#{Appsignal.Utils.module_name(controller)}##{action}"
+  end
+
+  def name(%Plug.Conn{method: method, private: %{plug_route: {path, _fun}}}) do
+    "#{method} #{path}"
+  end
+
+  def name(_conn) do
+    nil
+  end
+
   defp headers(req_headers) do
     headers(req_headers, %{})
   end

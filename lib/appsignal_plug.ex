@@ -139,22 +139,8 @@ defmodule Appsignal.Plug do
     |> set_conn_data(conn_with_status)
   end
 
-  defp set_name(span, %Plug.Conn{private: %{appsignal_name: name}}) do
-    @span.set_name(span, name)
-  end
-
-  defp set_name(span, %Plug.Conn{
-         private: %{phoenix_action: action, phoenix_controller: controller}
-       }) do
-    @span.set_name(span, "#{module_name(controller)}##{action}")
-  end
-
-  defp set_name(span, %Plug.Conn{method: method, private: %{plug_route: {path, _fun}}}) do
-    @span.set_name(span, "#{method} #{path}")
-  end
-
-  defp set_name(span, _conn) do
-    span
+  defp set_name(span, conn) do
+    @span.set_name(span, Appsignal.Metadata.name(conn))
   end
 
   defp set_category(span, %Plug.Conn{private: %{phoenix_endpoint: _endpoint}}) do
