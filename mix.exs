@@ -31,38 +31,13 @@ defmodule Appsignal.Plug.MixProject do
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
-    system_version = System.version()
-    otp_version = System.otp_release()
-
-    mime_dependency =
-      if Mix.env() == :test || Mix.env() == :test_no_nif do
-        case Version.compare(system_version, "1.10.0") do
-          :lt -> [{:mime, "~> 1.0"}]
-          _ -> []
-        end
-      else
-        []
-      end
-
-    telemetry_version =
-      case otp_version < "21" do
-        true -> "~> 0.4"
-        false -> "~> 0.4 or ~> 1.0"
-      end
-
-    plug_version =
-      case Version.compare(system_version, "1.10.0") do
-        :lt -> ">= 1.1.0 and < 1.14.0"
-        _ -> ">= 1.1.0"
-      end
-
     [
-      {:plug, plug_version},
+      {:plug, ">= 1.1.0"},
       {:appsignal, ">= 2.7.4 and < 3.0.0"},
       {:credo, "~> 1.2", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
-      {:telemetry, telemetry_version}
-    ] ++ mime_dependency
+      {:telemetry, "~> 0.4 or ~> 1.0"}
+    ]
   end
 end
