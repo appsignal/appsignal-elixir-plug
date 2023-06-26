@@ -1,6 +1,6 @@
 defmodule Appsignal.Plug do
-  require Appsignal.Utils
-  @span Appsignal.Utils.compile_env(:appsignal, :appsignal_span, Appsignal.Span)
+  require Application
+  @span Application.compile_env(:appsignal, :appsignal_span, Appsignal.Span)
 
   @moduledoc """
   AppSignal's Plug instrumentation instruments calls to Plug applications to
@@ -28,11 +28,11 @@ defmodule Appsignal.Plug do
   defmacro __using__(_) do
     quote do
       require Logger
-      require Appsignal.Utils
+      require Application
       Appsignal.IntegrationLogger.debug("AppSignal.Plug attached to #{__MODULE__}")
 
-      @tracer Appsignal.Utils.compile_env(:appsignal, :appsignal_tracer, Appsignal.Tracer)
-      @span Appsignal.Utils.compile_env(:appsignal, :appsignal_span, Appsignal.Span)
+      @tracer Application.compile_env(:appsignal, :appsignal_tracer, Appsignal.Tracer)
+      @span Application.compile_env(:appsignal, :appsignal_span, Appsignal.Span)
 
       use Plug.ErrorHandler
 
